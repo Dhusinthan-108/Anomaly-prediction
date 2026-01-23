@@ -1,0 +1,194 @@
+"""
+Custom CSS Styles for Gradio Interface
+"""
+
+def get_custom_css():
+    """Get custom CSS for stunning UI"""
+    return """
+    /* Modern Gradient Background */
+    .gradio-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+    
+    /* Card Styling */
+    .gr-box {
+        background: rgba(22, 33, 62, 0.95) !important;
+        border-radius: 16px !important;
+        border: 1px solid rgba(102, 126, 234, 0.3) !important;
+        backdrop-filter: blur(10px) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .gr-box:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 12px 48px rgba(102, 126, 234, 0.4) !important;
+    }
+    
+    /* Button Styling */
+    .gr-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        padding: 12px 24px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4) !important;
+    }
+    
+    .gr-button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.6) !important;
+    }
+    
+    .gr-button-primary {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+    
+    /* Input Styling */
+    .gr-input, .gr-text-input, .gr-number-input {
+        background: rgba(26, 26, 46, 0.8) !important;
+        border: 1px solid rgba(102, 126, 234, 0.3) !important;
+        border-radius: 12px !important;
+        color: #eaeaea !important;
+        padding: 12px !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .gr-input:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+    }
+    
+    /* Slider Styling */
+    .gr-slider input[type="range"] {
+        background: linear-gradient(to right, #667eea, #764ba2) !important;
+    }
+    
+    /* Tab Styling */
+    .gr-tab {
+        background: rgba(22, 33, 62, 0.6) !important;
+        border-radius: 12px 12px 0 0 !important;
+        color: #eaeaea !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .gr-tab.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+    }
+    
+    /* Video Player Styling */
+    video {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    /* Progress Bar */
+    .progress {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #10b981 100%) !important;
+        background-size: 200% 100% !important;
+        animation: gradient 2s ease infinite !important;
+    }
+    
+    @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Title Styling */
+    h1, h2, h3 {
+        color: #eaeaea !important;
+        font-weight: 700 !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    h1 {
+        font-size: 2.5rem !important;
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+    }
+    
+    /* Loading Animation */
+    .loading {
+        border: 4px solid rgba(102, 126, 234, 0.3) !important;
+        border-top: 4px solid #667eea !important;
+        border-radius: 50% !important;
+        animation: spin 1s linear infinite !important;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Alert Styling */
+    .alert-success {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border-left: 4px solid #10b981 !important;
+        color: #10b981 !important;
+        padding: 16px !important;
+        border-radius: 8px !important;
+    }
+    
+    .alert-warning {
+        background: rgba(245, 158, 11, 0.2) !important;
+        border-left: 4px solid #f59e0b !important;
+        color: #f59e0b !important;
+        padding: 16px !important;
+        border-radius: 8px !important;
+    }
+    
+    .alert-danger {
+        background: rgba(239, 68, 68, 0.2) !important;
+        border-left: 4px solid #ef4444 !important;
+        color: #ef4444 !important;
+        padding: 16px !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Gallery Styling */
+    .gr-gallery {
+        gap: 16px !important;
+    }
+    
+    .gr-gallery-item {
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .gr-gallery-item:hover {
+        transform: scale(1.05) !important;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
+    }
+    
+    /* Smooth Transitions */
+    * {
+        transition: all 0.3s ease !important;
+    }
+    
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+        width: 12px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(26, 26, 46, 0.5);
+        border-radius: 6px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 6px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #764ba2, #667eea);
+    }
+    """

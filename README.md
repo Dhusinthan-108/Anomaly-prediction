@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🎥 AI Surveillance Anomaly Detection System
 
 <div align="center">
@@ -412,3 +413,6 @@ Made with ❤️ and state-of-the-art deep learning
 ⭐ Star this repo if you find it helpful!
 
 </div>
+=======
+# Anomaly-prediction
+>>>>>>> dd035196db3724c595f022cce8b357941163d7e2

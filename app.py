@@ -60,10 +60,21 @@ def main():
         # Start server in a thread
         def start_server():
             with socketserver.TCPServer(("", port), MyHTTPRequestHandler) as httpd:
+                print(f"HTTP server started on port {port}")
                 httpd.serve_forever()
         
-        server_thread = threading.Thread(target=start_server, daemon=True)
+        server_thread = threading.Thread(target=start_server, daemon=False)  # Changed to daemon=False to keep running
         server_thread.start()
+        
+        # Keep the main thread alive
+        try:
+            while True:
+                import time
+                time.sleep(1)  # Sleep to prevent busy-waiting
+        except KeyboardInterrupt:
+            print("\nShutting down server...")
+            import sys
+            sys.exit(0)
         
     except (ImportError, OSError) as e:
         # PyTorch failed to load - fallback to demo mode
@@ -108,10 +119,21 @@ def main():
         # Start server in a thread
         def start_server():
             with socketserver.TCPServer(("", port), MyHTTPRequestHandler) as httpd:
+                print(f"HTTP server started on port {port}")
                 httpd.serve_forever()
         
-        server_thread = threading.Thread(target=start_server, daemon=True)
+        server_thread = threading.Thread(target=start_server, daemon=False)  # Changed to daemon=False to keep running
         server_thread.start()
+        
+        # Keep the main thread alive
+        try:
+            while True:
+                import time
+                time.sleep(1)  # Sleep to prevent busy-waiting
+        except KeyboardInterrupt:
+            print("\nShutting down server...")
+            import sys
+            sys.exit(0)
     
     except Exception as e:
         with open("crash_log.txt", "w", encoding="utf-8") as f:

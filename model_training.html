@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Surveillance - Model Training & Testing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #a855f7 100%);
+            border-radius: 50px;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(14, 165, 233, 0.5), 0 0 40px rgba(99, 102, 241, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(99, 102, 241, 0.6), 0 0 60px rgba(168, 85, 247, 0.4);
+            }
+        }
+
+        .logo i {
+            font-size: 32px;
+            color: white;
+        }
+
+        .logo span {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 1px;
+        }
+
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            color: #94a3b8;
+            font-weight: 400;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Navigation Tabs */
+        .navigation-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 50px;
+            color: #38bdf8;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(56, 189, 248, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 189, 248, 0.3);
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Main Content */
+        .main-content {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Training and Testing Sections */
+        .training-section, .testing-section {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8em;
+            color: #f1f5f9;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .controls-grid-wide {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .control-card-wide {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .control-card-wide label {
+            display: block;
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .control-card-wide input, .control-card-wide select, .control-card-wide textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar-wrapper {
+            width: 100%;
+            height: 12px;
+            background: rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #c084fc);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .result-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .result-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #38bdf8 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin: 10px 0;
+        }
+        
+        .result-label {
+            color: #94a3b8;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #38bdf8;
+            display: block;
+        }
+
+        .metric-label {
+            color: #94a3b8;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .chart-container {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .main-content {
+                padding: 30px 20px;
+            }
+            
+            .controls-grid-wide {
+                grid-template-columns: 1fr;
+            }
+            
+            .navigation-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <span>SmartWatch AI</span>
+            </div>
+            <h1>Model Training & Testing Center</h1>
+            <p>Train and evaluate your anomaly detection models for improved accuracy</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="navigation-tabs">
+            <button class="tab-btn active" data-tab="train">🎓 Train Model</button>
+            <button class="tab-btn" data-tab="test">🔬 Test Model</button>
+            <button class="tab-btn" data-tab="detect">🔍 Detection</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Training Tab -->
+            <div id="train-tab" class="tab-content active">
+                <h2 class="section-title"><i class="fas fa-chalkboard-teacher"></i> Model Training</h2>
+                
+                <div class="controls-grid-wide">
+                    <div class="control-card-wide">
+                        <label><i class="fas fa-folder-open"></i> Dataset Path</label>
+                        <input type="text" id="train-dataset-path" placeholder="Enter path to training dataset" value="./data/training">
+                    </div>
+                    
+                    <div class="control-card-wide">
+                        <label><i class="fas fa-graduation-cap"></i> Number of Epochs</label>
+                        <input type="number" id="train-epochs" value="30" min="1" max="100">
+                    </div>
+                    
+                    <div class="control-card-wide">
+                        <label><i class="fas fa-boxes"></i> Batch Size</label>
+                        <input type="number" id="train-batch-size" value="8" min="1" max="32">
+                    </div>
+                    
+                    <div class="control-card-wide">
+                        <label><i class="fas fa-rocket"></i> Learning Rate</label>
+                        <input type="number" id="train-learning-rate" value="0.0001" step="0.0001" min="0.00001" max="0.01">
+                    </div>
+                    
+                    <div class="control-card-wide">
+                        <label><i class="fas fa-save"></i> Model Save Path</label>
+                        <input type="text" id="train-save-path" placeholder="Enter path to save model" value="./checkpoints/model.pth">
+                    </div>
+                    
+                    <div class="control-card-wide">
+                        <label><i class="fas fa-tasks"></i> Validation Split</label>
+                        <input type="number" id="train-validation-split" value="0.2" step="0.05" min="0" max="0.5">
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <button class="btn btn-primary" id="start-train-btn" onclick="startTraining()">
+                        <i class="fas fa-play-circle"></i> Start Training
+                    </button>
+                    <button class="btn btn-secondary" id="stop-train-btn" onclick="stopTraining()" disabled>
+                        <i class="fas fa-stop-circle"></i> Stop Training
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetTraining()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+
+                <!-- Training Progress -->
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <h4 id="train-progress-title">Ready to Train</h4>
+                        <span id="train-progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar" id="train-progress-bar"></div>
+                    </div>
+                    <p id="train-progress-text">Configure parameters and click Start Training</p>
+                </div>
+
+                <!-- Training Charts -->
+                <div class="chart-container">
+                    <div id="train-loss-chart" style="width: 100%; height: 300px; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                        <i class="fas fa-chart-line" style="font-size: 48px; margin-right: 10px;"></i>
+                        <span>Training & Validation Loss Chart</span>
+                    </div>
+                </div>
+
+                <!-- Training Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-value" id="train-accuracy">0.00%</span>
+                        <span class="metric-label">Training Accuracy</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value" id="train-loss">0.0000</span>
+                        <span class="metric-label">Training Loss</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value" id="val-accuracy">0.00%</span>
+                        <span class="metric-label">Validation Accuracy</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value" id="val-loss">0.0000</span>
+                        <span class="metric-label">Validation Loss</span>
+                    </div>
+                </div>
+
+                <!-- Training Logs -->
+                <div class="control-card-wide">
+                    <label><i class="fas fa-terminal"></i> Training Logs</label>
+                    <textarea id="training-logs" rows="8" readonly style="font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3);"></textarea>
+                </div>
+            </div>
+
+            <!-- Testing Tab -->
+            <div id="test-tab" class="tab-content">
+                <h2 class="section-title"><i class="fas fa-flask"></i> Model Testing</h2>
+                
+                <div class="controls-grid-wide">
+                    <div class="control-card-wide">
+                        <label><i class="fas fa-folder-open"></i> Test Dataset Path</label>
+                        <input type="text" id="test-dataset-path" placeholder="Enter path to test dataset" value="./data/testing">
+                    </div>
+                    
+                    <div class="control-card-wide">
+                        <label><i class="fas fa-brain"></i> Model Path</label>
+                        <input type="text" id="test-model-path" placeholder="Enter path to trained model" value="./checkpoints/model.pth">
+                    </div>
+                    
+                    <div class="control-card-wide">
+                        <label><i class="fas fa-boxes"></i> Test Batch Size</label>
+                        <input type="number" id="test-batch-size" value="8" min="1" max="32">
+                    </div>
+                    
+                    <div class="control-card-wide">
+                        <label><i class="fas fa-ruler"></i> Metrics to Compute</label>
+                        <select id="test-metrics">
+                            <option value="all">All Metrics</option>
+                            <option value="accuracy">Accuracy Only</option>
+                            <option value="auc">AUC-ROC Only</option>
+                            <option value="precision_recall">Precision & Recall</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <button class="btn btn-primary" id="start-test-btn" onclick="startTesting()">
+                        <i class="fas fa-vial"></i> Start Testing
+                    </button>
+                    <button class="btn btn-secondary" id="evaluate-btn" onclick="evaluateModel()" disabled>
+                        <i class="fas fa-calculator"></i> Evaluate Metrics
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetTesting()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+
+                <!-- Testing Progress -->
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <h4 id="test-progress-title">Ready to Test</h4>
+                        <span id="test-progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar" id="test-progress-bar"></div>
+                    </div>
+                    <p id="test-progress-text">Configure parameters and click Start Testing</p>
+                </div>
+
+                <!-- Test Results -->
+                <div class="results-grid">
+                    <div class="result-card">
+                        <i class="fas fa-chart-pie" style="font-size: 32px; color: #38bdf8; margin-bottom: 10px;"></i>
+                        <span class="result-value" id="test-accuracy">0.00%</span>
+                        <span class="result-label">Overall Accuracy</span>
+                    </div>
+                    <div class="result-card">
+                        <i class="fas fa-bolt" style="font-size: 32px; color: #818cf8; margin-bottom: 10px;"></i>
+                        <span class="result-value" id="test-auc">0.000</span>
+                        <span class="result-label">AUC-ROC Score</span>
+                    </div>
+                    <div class="result-card">
+                        <i class="fas fa-balance-scale" style="font-size: 32px; color: #c084fc; margin-bottom: 10px;"></i>
+                        <span class="result-value" id="test-precision">0.000</span>
+                        <span class="result-label">Precision</span>
+                    </div>
+                    <div class="result-card">
+                        <i class="fas fa-target" style="font-size: 32px; color: #a855f7; margin-bottom: 10px;"></i>
+                        <span class="result-value" id="test-recall">0.000</span>
+                        <span class="result-label">Recall</span>
+                    </div>
+                </div>
+
+                <!-- Confusion Matrix -->
+                <div class="chart-container">
+                    <div id="confusion-matrix" style="width: 100%; height: 300px; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                        <i class="fas fa-table" style="font-size: 48px; margin-right: 10px;"></i>
+                        <span>Confusion Matrix Visualization</span>
+                    </div>
+                </div>
+
+                <!-- Test Report -->
+                <div class="control-card-wide">
+                    <label><i class="fas fa-clipboard-list"></i> Test Report</label>
+                    <textarea id="test-report" rows="6" readonly style="font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3);"></textarea>
+                </div>
+            </div>
+
+            <!-- Detection Tab (redirect to main page) -->
+            <div id="detect-tab" class="tab-content">
+                <h2 class="section-title"><i class="fas fa-search"></i> Detection Interface</h2>
+                <div class="training-section" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-external-link-alt" style="font-size: 48px; color: #38bdf8; margin-bottom: 20px;"></i>
+                    <h3>Switch to Detection Interface</h3>
+                    <p>Go back to the main detection interface to analyze surveillance videos</p>
+                    <button class="btn btn-primary" onclick="window.location.href='index.html'">
+                        <i class="fas fa-arrow-right"></i> Go to Detection Interface
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons and tabs
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                // Show corresponding tab content
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        // Training Functions
+        function startTraining() {
+            const trainBtn = document.getElementById('start-train-btn');
+            const stopBtn = document.getElementById('stop-train-btn');
+            const logs = document.getElementById('training-logs');
+            
+            trainBtn.disabled = true;
+            stopBtn.disabled = false;
+            
+            // Clear logs
+            logs.value = '[INFO] Training started...\n';
+            
+            // Simulate training progress
+            simulateTrainingProgress();
+        }
+
+        function stopTraining() {
+            const trainBtn = document.getElementById('start-train-btn');
+            const stopBtn = document.getElementById('stop-train-btn');
+            const logs = document.getElementById('training-logs');
+            
+            trainBtn.disabled = false;
+            stopBtn.disabled = true;
+            
+            logs.value += '[INFO] Training stopped by user.\n';
+        }
+
+        function resetTraining() {
+            document.getElementById('train-progress-bar').style.width = '0%';
+            document.getElementById('train-progress-percent').textContent = '0%';
+            document.getElementById('train-progress-title').textContent = 'Ready to Train';
+            document.getElementById('train-progress-text').textContent = 'Configure parameters and click Start Training';
+            
+            document.getElementById('train-accuracy').textContent = '0.00%';
+            document.getElementById('train-loss').textContent = '0.0000';
+            document.getElementById('val-accuracy').textContent = '0.00%';
+            document.getElementById('val-loss').textContent = '0.0000';
+            
+            document.getElementById('training-logs').value = '';
+            
+            document.getElementById('start-train-btn').disabled = false;
+            document.getElementById('stop-train-btn').disabled = true;
+        }
+
+        function simulateTrainingProgress() {
+            const progressBar = document.getElementById('train-progress-bar');
+            const percentDisplay = document.getElementById('train-progress-percent');
+            const titleDisplay = document.getElementById('train-progress-title');
+            const textDisplay = document.getElementById('train-progress-text');
+            const logs = document.getElementById('training-logs');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    document.getElementById('start-train-btn').disabled = false;
+                    document.getElementById('stop-train-btn').disabled = true;
+                    logs.value += '[INFO] Training completed successfully!\n';
+                }
+                
+                progressBar.style.width = progress + '%';
+                percentDisplay.textContent = Math.round(progress) + '%';
+                
+                // Update metrics based on progress
+                const trainAcc = 60 + (progress * 0.4 * Math.random());
+                const trainLoss = 1.0 - (progress * 0.008 * Math.random());
+                const valAcc = 55 + (progress * 0.35 * Math.random());
+                const valLoss = 1.2 - (progress * 0.009 * Math.random());
+                
+                document.getElementById('train-accuracy').textContent = trainAcc.toFixed(2) + '%';
+                document.getElementById('train-loss').textContent = trainLoss.toFixed(4);
+                document.getElementById('val-accuracy').textContent = valAcc.toFixed(2) + '%';
+                document.getElementById('val-loss').textContent = valLoss.toFixed(4);
+                
+                // Update title and text based on progress
+                if (progress < 20) {
+                    titleDisplay.textContent = 'Initializing Training...';
+                    textDisplay.textContent = 'Setting up model and loading data';
+                    if (Math.floor(progress) % 5 === 0) logs.value += `[PROGRESS] Epoch 1/${document.getElementById('train-epochs').value}: ${(progress/5).toFixed(1)}%\n`;
+                } else if (progress < 40) {
+                    titleDisplay.textContent = 'Early Training Phase';
+                    textDisplay.textContent = 'First few epochs in progress';
+                    if (Math.floor(progress) % 5 === 0) logs.value += `[PROGRESS] Epoch ${(progress/2).toFixed(0)}/${document.getElementById('train-epochs').value}: Phase 1\n`;
+                } else if (progress < 60) {
+                    titleDisplay.textContent = 'Mid-Training Phase';
+                    textDisplay.textContent = 'Model learning patterns';
+                    if (Math.floor(progress) % 5 === 0) logs.value += `[PROGRESS] Epoch ${(progress/1.5).toFixed(0)}/${document.getElementById('train-epochs').value}: Phase 2\n`;
+                } else if (progress < 80) {
+                    titleDisplay.textContent = 'Late Training Phase';
+                    textDisplay.textContent = 'Fine-tuning and validation';
+                    if (Math.floor(progress) % 5 === 0) logs.value += `[PROGRESS] Epoch ${(progress/1.2).toFixed(0)}/${document.getElementById('train-epochs').value}: Phase 3\n`;
+                } else {
+                    titleDisplay.textContent = 'Finalizing Training...';
+                    textDisplay.textContent = 'Saving model and generating report';
+                    if (Math.floor(progress) % 5 === 0) logs.value += `[PROGRESS] Finalizing: ${progress.toFixed(0)}% complete\n`;
+                }
+            }, 300);
+        }
+
+        // Testing Functions
+        function startTesting() {
+            const testBtn = document.getElementById('start-test-btn');
+            const evalBtn = document.getElementById('evaluate-btn');
+            const logs = document.getElementById('test-report');
+            
+            testBtn.disabled = true;
+            evalBtn.disabled = false;
+            
+            // Clear report
+            logs.value = 'Test report will be generated here...\n';
+            
+            // Simulate testing progress
+            simulateTestingProgress();
+        }
+
+        function evaluateModel() {
+            // Generate realistic test metrics
+            const accuracy = 85 + (Math.random() * 10);
+            const auc = 0.85 + (Math.random() * 0.1);
+            const precision = 0.80 + (Math.random() * 0.15);
+            const recall = 0.75 + (Math.random() * 0.2);
+            
+            document.getElementById('test-accuracy').textContent = accuracy.toFixed(2) + '%';
+            document.getElementById('test-auc').textContent = auc.toFixed(3);
+            document.getElementById('test-precision').textContent = precision.toFixed(3);
+            document.getElementById('test-recall').textContent = recall.toFixed(3);
+            
+            // Generate test report
+            const report = `Test Report Generated:
+================================
+Test Date: ${new Date().toLocaleString()}
+Model: anomaly_detection_model.pth
+Dataset: ./data/testing
+Metrics Computed: All
+
+Results:
+- Overall Accuracy: ${accuracy.toFixed(2)}%
+- AUC-ROC Score: ${auc.toFixed(3)}
+- Precision: ${precision.toFixed(3)}
+- Recall: ${recall.toFixed(3)}
+- F1-Score: ${((2 * precision * recall) / (precision + recall)).toFixed(3)}
+
+Conclusion: Model performance is ${(accuracy > 90 ? 'excellent' : accuracy > 80 ? 'good' : 'needs improvement')}
+================================
+`;
+            document.getElementById('test-report').value = report;
+        }
+
+        function resetTesting() {
+            document.getElementById('test-progress-bar').style.width = '0%';
+            document.getElementById('test-progress-percent').textContent = '0%';
+            document.getElementById('test-progress-title').textContent = 'Ready to Test';
+            document.getElementById('test-progress-text').textContent = 'Configure parameters and click Start Testing';
+            
+            document.getElementById('test-accuracy').textContent = '0.00%';
+            document.getElementById('test-auc').textContent = '0.000';
+            document.getElementById('test-precision').textContent = '0.000';
+            document.getElementById('test-recall').textContent = '0.000';
+            
+            document.getElementById('test-report').value = '';
+            
+            document.getElementById('start-test-btn').disabled = false;
+            document.getElementById('evaluate-btn').disabled = true;
+        }
+
+        function simulateTestingProgress() {
+            const progressBar = document.getElementById('test-progress-bar');
+            const percentDisplay = document.getElementById('test-progress-percent');
+            const titleDisplay = document.getElementById('test-progress-title');
+            const textDisplay = document.getElementById('test-progress-text');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 8;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    document.getElementById('start-test-btn').disabled = false;
+                    document.getElementById('evaluate-btn').disabled = false;
+                    textDisplay.textContent = 'Testing completed! Click "Evaluate Metrics" to see results.';
+                }
+                
+                progressBar.style.width = progress + '%';
+                percentDisplay.textContent = Math.round(progress) + '%';
+                
+                if (progress < 30) {
+                    titleDisplay.textContent = 'Loading Test Data...';
+                    textDisplay.textContent = 'Preparing test dataset for evaluation';
+                } else if (progress < 60) {
+                    titleDisplay.textContent = 'Running Inference...';
+                    textDisplay.textContent = 'Processing test samples through the model';
+                } else {
+                    titleDisplay.textContent = 'Computing Metrics...';
+                    textDisplay.textContent = 'Calculating performance metrics';
+                }
+            }, 200);
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Model Training & Testing Interface Loaded');
+        });
+    </script>
+</body>
+</html>

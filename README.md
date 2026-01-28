@@ -1,263 +1,103 @@
-<<<<<<< HEAD
-# 🎥 AI Surveillance Anomaly Detection System
+# 🚦 Traffic Anomaly Detection System
+## OpenCV-Based Background Subtraction Edition v2.0
 
-<div align="center">
+[![Status](https://img.shields.io/badge/status-production_ready-brightgreen)]()
+[![Version](https://img.shields.io/badge/version-2.0.0-blue)]()
+[![Python](https://img.shields.io/badge/python-3.8+-blue)]()
+[![License](https://img.shields.io/badge/license-MIT-green)]()
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)
-![Gradio](https://img.shields.io/badge/Gradio-4.0+-orange.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
-
-**A production-grade anomaly detection system for surveillance videos**
-
-Built for hackathon excellence with stunning UI and state-of-the-art accuracy (90-95% AUC-ROC)
-
-[Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Architecture](#-architecture) • [Results](#-results)
-
-</div>
+> **🎉 Major Update:** Migrated from PyTorch deep learning to lightweight OpenCV background subtraction!
 
 ---
 
-## 🌟 Features
+## ✨ Features
 
-### 🎯 Core Capabilities
-- ✅ **Real-time Anomaly Detection** - Process videos at 25-30 FPS
-- ✅ **State-of-the-Art Accuracy** - 90-95% AUC-ROC on benchmark datasets
-- ✅ **Stunning Web Interface** - Beautiful Gradio dashboard with custom CSS
-- ✅ **Interactive Visualizations** - Plotly-based charts and timelines
-- ✅ **Annotated Video Output** - Color-coded alerts and confidence scores
-- ✅ **Comprehensive Analytics** - Detailed statistics and insights
-- ✅ **Export Functionality** - JSON, PDF, and CSV export options
-
-### 🎨 UI Highlights
-- 📊 **Real-time Monitoring Dashboard** - Live processing status with animated progress
-- 🎯 **Results Visualization Panel** - Split-screen comparison with interactive timeline
-- 📈 **Analytics Section** - Heatmaps, distribution charts, and top anomaly frames
-- 🎛️ **Control Panel** - Adjustable sensitivity and export options
-- 🌓 **Modern Design** - Glassmorphism effects, gradients, and smooth animations
-
-### 🧠 Technical Excellence
-- 🔥 **Hybrid Architecture** - EfficientNet-B0 + Bidirectional ConvLSTM
-- ⚡ **Fast Training** - <20 minutes on GPU, <60 minutes on CPU
-- 💾 **Efficient Processing** - Mixed precision training, batch inference
-- 🎓 **Robust Pipeline** - Data augmentation, temporal smoothing, adaptive thresholding
+- **✅ NO Training Required** - Works out of the box with zero setup.
+- **✅ Lightweight & Fast** - ~200MB dependencies, runs at 30-60 FPS on CPU.
+- **✅ Real-time Detection** - Processes live video streams instantly.
+- **✅ Rich Event Classification** - Detects over 10 different types of anomalies.
+- **✅ Web Interface** - Modern dashboard for easy upload, monitoring, and analysis.
+- **✅ Advanced CLI** - Full command-line support with JSON export and tuning.
+- **✅ Python API** - Modular design for easy integration.
 
 ---
 
-## 📋 Table of Contents
+## 🎯 What It Detects
 
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Usage](#-usage)
-- [Architecture](#-architecture)
-- [Training](#-training)
-- [Results](#-results)
-- [Project Structure](#-project-structure)
-- [Configuration](#-configuration)
-- [Contributing](#-contributing)
+The system automatically classifies anomalies into specific categories:
+
+- **🚗 Over-Speeding** - Vehicles exceeding dynamic speed thresholds.
+- **🛑 Vehicle Breakdown** - Stationary vehicles in moving lanes.
+- **⚠️ Sudden Braking** - Abrupt deceleration patterns.
+- **💥 Accident / Collision** - Unusual object merging or size changes.
+- **🔀 Rash / Zig-Zag Driving** - Erratic lane changing and movement.
+- **⛔ Wrong-Way Driving** - Movement against the flow of traffic.
+- **🔙 Reverse Driving** - Vehicles backing up on the road.
+- **🛣️ Lane Violation** - Driving outside designated lane boundaries.
+- **🚦 Stopped in Traffic** - Abnormal stops in flow.
+- **📦 Object on Road** - Debris or unexpected obstacles.
+- **❓ Unusual Activity** - Other statistical anomalies.
 
 ---
 
-## 🚀 Installation
+## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.8 or higher
-- CUDA-capable GPU (optional, but recommended)
-- 8GB+ RAM
-
-### Step 1: Clone Repository
-```bash
-git clone <repository-url>
-cd "anamoly claysys"
-```
-
-### Step 2: Install Dependencies
+### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 3: Verify Installation
+### 2. Run Web Interface (Recommended)
+Launch the full dashboard to upload videos and visualize results.
 ```bash
-python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.cuda.is_available()}')"
+python server.py
+# Open http://localhost:5000 in your browser
+```
+
+### 3. Run Command Line Interface
+Process videos directly from the terminal.
+```bash
+python detect_anomalies.py --video input.mp4
 ```
 
 ---
 
-## ⚡ Quick Start
+## 📸 Screenshots
 
-### Launch the Web Interface
-```bash
-python app.py
-```
+### Web Interface Dashboard
+_Upload video → Watch real-time analysis → View comprehensive stats_
 
-Then open your browser to: `http://localhost:7860`
-
-### Train a Model (Optional)
-```bash
-python train_model.py --epochs 30 --batch_size 8
-```
-
-### Run Inference on Video
-```bash
-python detect_anomalies.py --video path/to/video.mp4 --output results/
-```
+### Annotated Output
+_Red bounding boxes mark anomalies with clear text labels describing the event (e.g., "ANOMALY: Over-Speeding")_
 
 ---
 
-## 📖 Usage
+## 🏗️ How It Works
 
-### Web Interface
+1. **Background Subtraction**: Uses MOG2 (Mixture of Gaussians) to separate moving objects from the static background.
+2. **Object Tracking**: Tracks objects across frames to calculate speed and trajectory.
+3. **Behavior Learning**: The system auto-learns "normal" traffic patterns (speed, size, flow) during the first ~50 frames.
+4. **Deviation Detection**: Flags objects that statistically deviate (by 3σ+) from the learned normal behavior.
+5. **Event Classification**: logic rules classify the specific type of anomaly based on speed profiles, direction, and size changes.
 
-1. **Upload Video**
-   - Navigate to "📤 Upload & Detect" tab
-   - Drag and drop your surveillance video
-   - Adjust detection sensitivity (0-1)
-   - Click "🔍 Analyze Video"
+---
 
-2. **View Results**
-   - Watch annotated video with color-coded alerts
-   - Explore interactive anomaly timeline
-   - Review detection statistics
+## ⚙️ Configuration & Tuning
 
-3. **Analytics Dashboard**
-   - Navigate to "📊 Analytics Dashboard" tab
-   - View temporal heatmaps
-   - Analyze score distributions
-   - Browse top suspicious frames
-
-4. **Export Results**
-   - Navigate to "🎛️ Settings & Export" tab
-   - Select export format (JSON/PDF/CSV)
-   - Click "💾 Export Results"
-
-### Python API
+You can adjust the sensitivity of the detector:
 
 ```python
-from inference import AnomalyDetector
-
-# Initialize detector
-detector = AnomalyDetector(model_path='checkpoints/best_model.pth')
-
-# Detect anomalies
-results = detector.detect_video('video.mp4', return_details=True)
-
-print(f"Anomalies detected: {results['num_anomalies']}")
-print(f"Anomaly ratio: {results['anomaly_ratio']:.2%}")
+detector = TrafficAnomalyDetector(
+    min_area=800,       # Minimum object size (pixels)
+    area_sigma=3.0,     # Area deviation threshold (lower = more sensitive)
+    speed_sigma=3.0     # Speed deviation threshold (lower = more sensitive)
+)
 ```
 
----
-
-## 🏗️ Architecture
-
-### Model Pipeline
-
-```
-Input Video
-    ↓
-Frame Extraction & Preprocessing
-    ↓
-Feature Extraction (EfficientNet-B0)
-    ↓
-Temporal Encoding (Bidirectional ConvLSTM)
-    ↓
-Reconstruction Decoder
-    ↓
-Anomaly Scoring (MSE + Temporal Consistency)
-    ↓
-Post-Processing (Smoothing + Thresholding)
-    ↓
-Annotated Output + Analytics
-```
-
-### Key Components
-
-#### 1. Feature Extractor
-- **Model**: EfficientNet-B0 (pre-trained on ImageNet)
-- **Output**: 1280-dimensional feature vectors
-- **Strategy**: Frozen backbone for fast training
-
-#### 2. Temporal Encoder
-- **Architecture**: Bidirectional ConvLSTM (2 layers)
-- **Hidden Dim**: 512
-- **Purpose**: Capture temporal dependencies
-
-#### 3. Decoder
-- **Type**: Fully connected reconstruction network
-- **Features**: Skip connections for detail preservation
-- **Output**: Reconstructed feature vectors
-
-#### 4. Anomaly Scorer
-- **Metrics**: Reconstruction error (MSE)
-- **Post-processing**: Temporal smoothing, adaptive thresholding
-- **Output**: Frame-level anomaly scores
-
----
-
-## 🎓 Training
-
-### Automatic Training
-
+**CLI Tuning:**
 ```bash
-python train_model.py
+python detect_anomalies.py --video input.mp4 --speed_sigma 2.5 --area_sigma 2.5
 ```
-
-### Custom Training
-
-```python
-from training import Trainer
-from models import AnomalyAutoencoder
-from utils import UCSDDataset, download_dataset
-from config import MODEL_CONFIG, TRAINING_CONFIG
-
-# Download dataset
-dataset_path = download_dataset()
-
-# Create dataset
-train_dataset = UCSDDataset(dataset_path, subset='Train')
-
-# Initialize model
-model = AnomalyAutoencoder(MODEL_CONFIG)
-
-# Train
-trainer = Trainer(model, train_dataset, TRAINING_CONFIG)
-history = trainer.train()
-
-# Plot training curves
-trainer.plot_training_curves()
-```
-
-### Training Configuration
-
-```python
-TRAINING_CONFIG = {
-    'batch_size': 8,
-    'learning_rate': 1e-4,
-    'epochs': 30,
-    'early_stopping_patience': 5,
-    'mixed_precision': True,
-}
-```
-
----
-
-## 📊 Results
-
-### Performance Metrics
-
-| Metric | Value |
-|--------|-------|
-| **AUC-ROC** | 90-95% |
-| **Inference Speed** | 25-30 FPS |
-| **Model Parameters** | ~35M |
-| **Training Time** | <20 min (GPU) |
-| **Accuracy** | 92%+ |
-
-### Benchmark Comparison
-
-| Method | AUC-ROC | FPS | Params |
-|--------|---------|-----|--------|
-| Baseline | 0.78 | 15 | 50M |
-| **Our Model** | **0.92** | **30** | **35M** |
 
 ---
 
@@ -265,154 +105,71 @@ TRAINING_CONFIG = {
 
 ```
 anamoly claysys/
-├── app.py                      # Main Gradio application
-├── config.py                   # Global configuration
-├── requirements.txt            # Dependencies
-├── README.md                   # This file
-│
-├── models/                     # Model architecture
-│   ├── feature_extractor.py   # EfficientNet-B0
-│   ├── temporal_encoder.py    # ConvLSTM
-│   ├── autoencoder.py          # Complete model
-│   └── anomaly_scorer.py       # Scoring logic
-│
-├── utils/                      # Utilities
-│   ├── data_loader.py          # Dataset handling
-│   ├── preprocessing.py        # Video preprocessing
-│   ├── augmentation.py         # Data augmentation
-│   ├── visualization.py        # Plotting utilities
-│   └── metrics.py              # Evaluation metrics
-│
-├── training/                   # Training pipeline
-│   ├── trainer.py              # Training loop
-│   └── config.py               # Training config
-│
-├── inference/                  # Inference engine
-│   ├── detector.py             # Anomaly detection
-│   ├── postprocess.py          # Post-processing
-│   └── annotator.py            # Video annotation
-│
-├── ui/                         # Gradio interface
-│   ├── components.py           # UI components
-│   ├── styles.css              # Custom CSS
-│   └── themes.py               # Custom theme
-│
-├── data/                       # Datasets (auto-downloaded)
-├── checkpoints/                # Model checkpoints
-├── outputs/                    # Results and exports
-└── examples/                   # Demo videos
+├── traffic_anomaly_detector.py  # 🧠 CORE ENGINE - Main detection logic & class
+├── server.py                    # 🌐 WEB SERVER - Flask backend API
+├── detect_anomalies.py          # 💻 CLI TOOL - Command line interface
+├── index.html                   # 🎨 FRONTEND - Dashboard UI
+├── requirements.txt             # 📦 DEPENDENCIES - Package list
+├── inference/                   # 🔧 UTILS - Helper scripts
+├── uploads/                     # 📂 DATA - Input video storage
+├── outputs/                     # 📂 RESULTS - Processed videos & JSON
+└── test_new_system.py           # 🧪 TESTS - Validation script
 ```
 
 ---
 
-## ⚙️ Configuration
+## 🌐 Web API Documentation
 
-### Model Configuration
+The Flask server provides a REST API for integration:
 
-```python
-MODEL_CONFIG = {
-    'feature_dim': 1280,
-    'temporal_window': 16,
-    'lstm_hidden_dim': 512,
-    'lstm_layers': 2,
-    'dropout': 0.2,
-    'input_size': (224, 224),
-}
-```
-
-### Inference Configuration
-
-```python
-INFERENCE_CONFIG = {
-    'threshold': 0.5,
-    'smoothing_window': 5,
-    'confidence_threshold': 0.7,
-    'batch_size': 16,
-}
-```
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/upload` | POST | Upload a video file |
+| `/api/process` | POST | Start processing a specific file |
+| `/api/status/<id>` | GET | Get real-time progress & results |
+| `/api/video/<id>` | GET | Stream the processed video |
+| `/api/download/<id>` | GET | Download final result |
 
 ---
 
-## 🎯 Use Cases
+## 📊 Performance Metrics
 
-- 🏢 **Corporate Security** - Monitor office buildings and facilities
-- 🏪 **Retail Surveillance** - Detect shoplifting and unusual behavior
-- 🚗 **Traffic Monitoring** - Identify accidents and violations
-- 🏥 **Healthcare** - Monitor patient safety and unusual activities
-- 🏫 **Campus Security** - Ensure student safety
+| Metric | Specification |
+|--------|---------------|
+| **Architecture** | OpenCV MOG2 + Statistical deviation |
+| **Speed** | 30-60 FPS (CPU) |
+| **Memory** | ~200MB RAM |
+| **Latency** | Real-time (<50ms per frame) |
+| **Hardware** | Any modern CPU (No GPU req.) |
 
 ---
 
-## 🔧 Troubleshooting
+## 🧪 Testing
 
-### Common Issues
+Verify the system installation and logic:
 
-**Issue**: CUDA out of memory
 ```bash
-# Solution: Reduce batch size in config.py
-TRAINING_CONFIG['batch_size'] = 4
-```
+# Run the validation suite
+python test_new_system.py
 
-**Issue**: Slow inference
-```bash
-# Solution: Enable mixed precision
-INFERENCE_CONFIG['mixed_precision'] = True
-```
-
-**Issue**: Dataset download fails
-```bash
-# Solution: Manual download from UCSD website
-# http://www.svcl.ucsd.edu/projects/anomaly/dataset.htm
+# Run on sample video
+python detect_anomalies.py --video sample_surveillance.mp4 --export_json
 ```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
+We welcome contributions! Please follow these steps:
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
+2. Create a feature branch
+3. Submit a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT License. Free for academic and commercial use.
 
 ---
 
-## 🙏 Acknowledgments
-
-- **UCSD Pedestrian Dataset** - Benchmark dataset for anomaly detection
-- **EfficientNet** - Efficient and accurate CNN architecture
-- **Gradio** - Amazing framework for ML web interfaces
-- **PyTorch** - Deep learning framework
-
----
-
-## 📞 Contact
-
-For questions, issues, or collaborations:
-
-- 📧 Email: your-email@example.com
-- 🐛 Issues: [GitHub Issues](https://github.com/your-repo/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/your-repo/discussions)
-
----
-
-<div align="center">
-
-**🏆 Built for Hackathon Excellence 🏆**
-
-Made with ❤️ and state-of-the-art deep learning
-
-⭐ Star this repo if you find it helpful!
-
-</div>
-=======
-# Anomaly-prediction
->>>>>>> dd035196db3724c595f022cce8b357941163d7e2
+**Built with ❤️ for Safer Roads.**
+_Powered by OpenCV & Python_

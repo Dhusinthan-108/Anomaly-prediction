@@ -1,20 +1,15 @@
-torch>=2.0.0
-torchvision>=0.15.0
-gradio>=4.0.0
+# Core Dependencies (NO PyTorch needed!)
 opencv-python>=4.8.0
 numpy>=1.24.0
-matplotlib>=3.7.0
-plotly>=5.17.0
-seaborn>=0.12.0
-scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# Web Framework
+Flask>=2.3.0
+Flask-CORS>=4.0.0
+
+# Progress & Utilities
 tqdm>=4.66.0
 Pillow>=10.0.0
-scipy>=1.11.0
-timm>=0.9.0
-einops>=0.7.0
-av>=10.0.0
-imageio>=2.31.0
-imageio-ffmpeg>=0.4.9
-pandas>=2.0.0
-fpdf>=1.7.2
-reportlab>=4.0.0
+
+# Visualization
+matplotlib>=3.7.0

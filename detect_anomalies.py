@@ -1,22 +1,22 @@
 """
 Anomaly Detection Script
 Detect anomalies in video files from command line
+(Updated for OpenCV-based detection - NO PyTorch required)
 """
 
 import argparse
 from pathlib import Path
 import json
 
-from inference import AnomalyDetector, VideoAnnotator
-from config import CHECKPOINT_DIR, OUTPUT_DIR
+from traffic_anomaly_detector import TrafficAnomalyDetector
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Detect Anomalies in Video')
     parser.add_argument('--video', type=str, required=True, help='Path to input video')
-    parser.add_argument('--model', type=str, default=None, help='Path to model checkpoint')
-    parser.add_argument('--output', type=str, default=None, help='Output directory')
-    parser.add_argument('--threshold', type=float, default=0.5, help='Anomaly threshold')
-    parser.add_argument('--annotate', action='store_true', help='Create annotated video')
+    parser.add_argument('--output', type=str, default=None, help='Output video path')
+    parser.add_argument('--min_area', type=int, default=800, help='Minimum contour area')
+    parser.add_argument('--area_sigma', type=float, default=3.0, help='Area anomaly sigma')
+    parser.add_argument('--speed_sigma', type=float, default=3.0, help='Speed anomaly sigma')
     parser.add_argument('--export_json', action='store_true', help='Export results as JSON')
     return parser.parse_args()
 
@@ -24,7 +24,7 @@ def main():
     args = parse_args()
     
     print("=" * 70)
-    print("🔍 ANOMALY DETECTION")
+    print("🔍 ANOMALY DETECTION (OpenCV Background Subtraction)")
     print("=" * 70)
     print()
     
@@ -35,72 +35,54 @@ def main():
         return
     
     if args.output:
-        output_dir = Path(args.output)
+        output_path = Path(args.output)
     else:
-        output_dir = OUTPUT_DIR
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Load model
-    if args.model:
-        model_path = args.model
-    else:
-        model_path = CHECKPOINT_DIR / 'best_model.pth'
-        if not model_path.exists():
-            print("⚠️ No trained model found. Using untrained model.")
-            model_path = None
+        output_path = video_path.parent / f"anomaly_{video_path.name}"
     
     print(f"📹 Input video: {video_path}")
-    print(f"📁 Output directory: {output_dir}")
-    if model_path:
-        print(f"🧠 Model: {model_path}")
-    print(f"🎯 Threshold: {args.threshold}")
+    print(f"📁 Output video: {output_path}")
+    print(f"⚙️  Min area: {args.min_area}")
+    print(f"⚙️  Area sigma: {args.area_sigma}")
+    print(f"⚙️  Speed sigma: {args.speed_sigma}")
     print()
     
     # Initialize detector
     print("🔄 Initializing detector...")
-    detector = AnomalyDetector(model_path=model_path)
-    detector.config['threshold'] = args.threshold
+    detector = TrafficAnomalyDetector(
+        min_area=args.min_area,
+        area_sigma=args.area_sigma,
+        speed_sigma=args.speed_sigma
+    )
     print()
     
     # Detect anomalies
-    print("🚀 Detecting anomalies...")
-    results = detector.detect_video(str(video_path), return_details=True)
+    print("🚀 Processing video...")
+    results = detector.process_video(str(video_path), str(output_path))
     print()
     
     # Print results
     print("=" * 70)
     print("📊 RESULTS")
     print("=" * 70)
-    print(f"Total frames: {results['num_frames']}")
-    print(f"Anomalies detected: {results['num_anomalies']}")
+    print(f"Total frames: {results['total_frames']}")
+    print(f"Anomalies detected: {results['anomaly_count']}")
     print(f"Anomaly ratio: {results['anomaly_ratio']:.2%}")
-    print(f"Threshold: {results['threshold']:.4f}")
-    print(f"Max score: {results['max_score']:.4f}")
-    print(f"Mean score: {results['mean_score']:.4f}")
-    print(f"Anomaly segments: {len(results['segments'])}")
+    print(f"Video duration: {results['video_info']['duration']:.2f} seconds")
     print()
     
-    if results['segments']:
-        print("🎯 Anomaly Segments:")
-        for i, (start, end) in enumerate(results['segments'][:10]):  # Show first 10
-            print(f"   {i+1}. Frames {start}-{end} ({end-start} frames)")
-        if len(results['segments']) > 10:
-            print(f"   ... and {len(results['segments'])-10} more")
+    if results['event_types']:
+        print("🎯 Detected Event Types:")
+        for event_type, count in sorted(results['event_types'].items(), key=lambda x: x[1], reverse=True):
+            print(f"   • {event_type}: {count} occurrences")
         print()
     
-    # Create annotated video
-    if args.annotate:
-        print("🎨 Creating annotated video...")
-        annotator = VideoAnnotator()
-        output_video = output_dir / f"annotated_{video_path.name}"
-        annotator.annotate_video(
-            str(video_path),
-            results['scores'],
-            results['anomalies'],
-            str(output_video),
-            threshold=results['threshold']
-        )
-        print(f"✅ Annotated video saved: {output_video}")
+    if results['anomaly_frames']:
+        print(f"📍 Anomaly Frames (first 20):")
+        for i, frame_id in enumerate(results['anomaly_frames'][:20]):
+            timestamp = frame_id / results['video_info']['fps']
+            print(f"   {i+1}. Frame {frame_id} (t={timestamp:.2f}s)")
+        if len(results['anomaly_frames']) > 20:
+            print(f"   ... and {len(results['anomaly_frames'])-20} more")
         print()
     
     # Export JSON
@@ -108,18 +90,16 @@ def main():
         print("💾 Exporting results...")
         export_data = {
             'video': str(video_path),
-            'num_frames': results['num_frames'],
-            'num_anomalies': results['num_anomalies'],
+            'output': str(output_path),
+            'total_frames': results['total_frames'],
+            'anomaly_count': results['anomaly_count'],
             'anomaly_ratio': results['anomaly_ratio'],
-            'threshold': results['threshold'],
-            'max_score': results['max_score'],
-            'mean_score': results['mean_score'],
-            'segments': results['segments'],
-            'scores': results['scores'].tolist(),
-            'anomalies': results['anomalies'].tolist()
+            'event_types': results['event_types'],
+            'anomaly_frames': results['anomaly_frames'],
+            'video_info': results['video_info']
         }
         
-        json_path = output_dir / f"results_{video_path.stem}.json"
+        json_path = output_path.parent / f"results_{video_path.stem}.json"
         with open(json_path, 'w') as f:
             json.dump(export_data, f, indent=2)
         
@@ -129,6 +109,7 @@ def main():
     print("=" * 70)
     print("✅ DETECTION COMPLETE!")
     print("=" * 70)
+    print(f"📹 Output video: {output_path}")
     print()
 
 if __name__ == "__main__":

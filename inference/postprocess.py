@@ -1,9 +1,10 @@
 """
 Post-processing utilities for anomaly detection
+(Updated for OpenCV-based detection - NO PyTorch required)
 """
 import numpy as np
-import torch
 from scipy.ndimage import gaussian_filter1d
+
 
 class PostProcessor:
     """
@@ -22,12 +23,12 @@ class PostProcessor:
         """
         Apply Gaussian smoothing to scores
         Args:
-            scores: Anomaly scores (numpy array or tensor)
+            scores: Anomaly scores (numpy array)
         Returns:
             smoothed: Smoothed scores
         """
-        if isinstance(scores, torch.Tensor):
-            scores = scores.cpu().numpy()
+        if not isinstance(scores, np.ndarray):
+            scores = np.array(scores)
         
         smoothed = gaussian_filter1d(scores, sigma=self.smoothing_sigma)
         
@@ -45,8 +46,8 @@ class PostProcessor:
         if min_length is None:
             min_length = self.min_segment_length
         
-        if isinstance(anomalies, torch.Tensor):
-            anomalies = anomalies.cpu().numpy()
+        if not isinstance(anomalies, np.ndarray):
+            anomalies = np.array(anomalies)
         
         filtered = anomalies.copy()
         
@@ -80,8 +81,8 @@ class PostProcessor:
         Returns:
             merged: Merged anomaly mask
         """
-        if isinstance(anomalies, torch.Tensor):
-            anomalies = anomalies.cpu().numpy()
+        if not isinstance(anomalies, np.ndarray):
+            anomalies = np.array(anomalies)
         
         merged = anomalies.copy()
         
@@ -104,6 +105,35 @@ class PostProcessor:
         
         return merged
     
+    def extract_segments(self, anomalies):
+        """
+        Extract anomaly segments as (start, end) tuples
+        Args:
+            anomalies: Binary anomaly mask
+        Returns:
+            segments: List of (start, end) tuples
+        """
+        if not isinstance(anomalies, np.ndarray):
+            anomalies = np.array(anomalies)
+        
+        segments = []
+        in_segment = False
+        start = 0
+        
+        for i in range(len(anomalies)):
+            if anomalies[i] and not in_segment:
+                start = i
+                in_segment = True
+            elif not anomalies[i] and in_segment:
+                segments.append((start, i))
+                in_segment = False
+        
+        # Handle last segment
+        if in_segment:
+            segments.append((start, len(anomalies)))
+        
+        return segments
+    
     def compute_segment_confidence(self, scores, segments):
         """
         Compute confidence for each anomaly segment
@@ -113,8 +143,8 @@ class PostProcessor:
         Returns:
             confidences: List of confidence scores
         """
-        if isinstance(scores, torch.Tensor):
-            scores = scores.cpu().numpy()
+        if not isinstance(scores, np.ndarray):
+            scores = np.array(scores)
         
         confidences = []
         
@@ -146,12 +176,18 @@ class PostProcessor:
         """
         Complete post-processing pipeline
         Args:
-            scores: Anomaly scores
-            anomalies: Binary anomaly mask
+            scores: Anomaly scores (numpy array or list)
+            anomalies: Binary anomaly mask (numpy array or list)
         Returns:
             processed_scores: Smoothed scores
             processed_anomalies: Filtered anomalies
         """
+        # Convert to numpy arrays if needed
+        if not isinstance(scores, np.ndarray):
+            scores = np.array(scores)
+        if not isinstance(anomalies, np.ndarray):
+            anomalies = np.array(anomalies)
+        
         # Smooth scores
         processed_scores = self.gaussian_smoothing(scores)
         
@@ -176,10 +212,18 @@ if __name__ == "__main__":
     anomalies[50:52] = 1  # Very short segment
     anomalies[60:70] = 1  # Another long segment
     
-    print(f"Original anomalies: {anomalies.sum()}")
+    print(f"Original anomalies: {int(anomalies.sum())}")
     
     # Process
     smoothed_scores, filtered_anomalies = processor.process(scores, anomalies)
     
-    print(f"Filtered anomalies: {filtered_anomalies.sum()}")
+    print(f"Filtered anomalies: {int(filtered_anomalies.sum())}")
     print(f"Score smoothing applied: ✅")
+    
+    # Extract and rank segments
+    segments = processor.extract_segments(filtered_anomalies)
+    ranked = processor.rank_segments(smoothed_scores, segments)
+    
+    print(f"\n📊 Detected {len(segments)} segments:")
+    for i, (start, end, conf) in enumerate(ranked[:5]):
+        print(f"   {i+1}. Frames {start}-{end} (confidence: {conf:.4f})")
